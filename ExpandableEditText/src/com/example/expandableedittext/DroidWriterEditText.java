@@ -1,6 +1,8 @@
 package com.example.expandableedittext;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
@@ -26,6 +28,7 @@ public class DroidWriterEditText extends EditText {
 
 	// Log tag
 	public static final String TAG = "DroidWriter";
+	public static final int RESULT_LOAD_IMAGE = 0x01;
 
 	// Style constants
 	private static final int STYLE_BOLD = 0;
@@ -55,22 +58,26 @@ public class DroidWriterEditText extends EditText {
 	// Html image getter that handles the loading of inline images
 	private Html.ImageGetter imageGetter;
 
+	private Activity mActivity;
+
 	public DroidWriterEditText(Context context) {
 		super(context);
-		initialize();
+		initialize(context);
 	}
 
 	public DroidWriterEditText(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		initialize();
+		initialize(context);
 	}
 
 	public DroidWriterEditText(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		initialize();
+		initialize(context);
 	}
 
-	private void initialize() {
+	private void initialize(Context context) {
+		mActivity = (Activity) context;
+
 		// Add a default imageGetter
 		imageGetter = new Html.ImageGetter() {
 			@Override
@@ -392,6 +399,18 @@ public class DroidWriterEditText extends EditText {
 		alignRightToggle.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
 				toggleStyle(ALIGN_RIGHT);
+			}
+		});
+	}
+
+	public void setImageInsertButton(View button) {
+		button.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				Intent i = new Intent(
+						Intent.ACTION_PICK,
+						android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+				mActivity.startActivityForResult(i, RESULT_LOAD_IMAGE);
 			}
 		});
 	}

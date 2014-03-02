@@ -3,9 +3,13 @@ package com.example.expandableedittext;
 import com.example.expandableedittext.R;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -13,7 +17,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
-	
+
 	public int color = 0xFF000000;
 	public DroidWriterEditText dwEdit;
 
@@ -29,39 +33,40 @@ public class MainActivity extends Activity {
 		ToggleButton leftButton = (ToggleButton) findViewById(R.id.leftButton);
 		ToggleButton rigButton = (ToggleButton) findViewById(R.id.rightButton);
 		ToggleButton centerButton = (ToggleButton) findViewById(R.id.centerButton);
-		final Button colorBtn  = (Button) findViewById(R.id.colorBtn);
-		
+		final Button colorBtn = (Button) findViewById(R.id.colorBtn);
+		Button imageBtn = (Button) findViewById(R.id.ImageButton);
 
-//		View coolButton = findViewById(R.id.CoolButton);
-//		View cryButton = findViewById(R.id.CryButton);
+		// View coolButton = findViewById(R.id.CoolButton);
+		// View cryButton = findViewById(R.id.CryButton);
 
 		Button clearButton = (Button) findViewById(R.id.ClearButton);
 
 		dwEdit = (DroidWriterEditText) findViewById(R.id.DwEdit);
-//		dwEdit.setImageGetter(new Html.ImageGetter() {
-//			@Override
-//			public Drawable getDrawable(String source) {
-//				Drawable drawable = null;
-//
-//				try {
-//					if (source.equals("smiley_cool.gif")) {
-//						drawable = getResources().getDrawable(R.drawable.smiley_cool);
-//					} else if (source.equals("smiley_cry.gif")) {
-//						drawable = getResources().getDrawable(R.drawable.smiley_cry);
-//					} else {
-//						drawable = null;
-//					}
-//
-//					// Important
-//					if (drawable != null) {
-//						drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-//					}
-//				} catch (Exception e) {
-//					Log.e("DroidWriterTestActivity", "Failed to load inline image!");
-//				}
-//				return drawable;
-//			}
-//		});
+		// dwEdit.setImageGetter(new Html.ImageGetter() {
+		// @Override
+		// public Drawable getDrawable(String source) {
+		// Drawable drawable = null;
+		//
+		// try {
+		// if (source.equals("smiley_cool.gif")) {
+		// drawable = getResources().getDrawable(R.drawable.smiley_cool);
+		// } else if (source.equals("smiley_cry.gif")) {
+		// drawable = getResources().getDrawable(R.drawable.smiley_cry);
+		// } else {
+		// drawable = null;
+		// }
+		//
+		// // Important
+		// if (drawable != null) {
+		// drawable.setBounds(0, 0, drawable.getIntrinsicWidth(),
+		// drawable.getIntrinsicHeight());
+		// }
+		// } catch (Exception e) {
+		// Log.e("DroidWriterTestActivity", "Failed to load inline image!");
+		// }
+		// return drawable;
+		// }
+		// });
 		dwEdit.setSingleLine(false);
 		dwEdit.setMinLines(10);
 		dwEdit.setBoldToggleButton(boldToggle);
@@ -70,21 +75,23 @@ public class MainActivity extends Activity {
 		dwEdit.setLeftToggleButton(leftButton);
 		dwEdit.setCenterToggleButton(centerButton);
 		dwEdit.setRightToggleButton(rigButton);
-//		dwEdit.setImageInsertButton(coolButton, "smiley_cool.gif");
-//		dwEdit.setImageInsertButton(cryButton, "smiley_cry.gif");
+		dwEdit.setImageInsertButton(imageBtn);
+		// dwEdit.setImageInsertButton(coolButton, "smiley_cool.gif");
+		// dwEdit.setImageInsertButton(cryButton, "smiley_cry.gif");
 
-		//dwEdit.setClearButton(clearButton);
+		// dwEdit.setClearButton(clearButton);
 		clearButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Toast.makeText(MainActivity.this, dwEdit.getTextHTML(), Toast.LENGTH_LONG).show();
+				Toast.makeText(MainActivity.this, dwEdit.getTextHTML(),
+						Toast.LENGTH_LONG).show();
 			}
 		});
-		
+
 		colorBtn.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -92,42 +99,69 @@ public class MainActivity extends Activity {
 			}
 		});
 	}
-	
+
 	public void onClickColorPickerDialog(final View v) {
-				
+
 		final ColorPickerDialog colorDialog = new ColorPickerDialog(this, color);
-		
+
 		colorDialog.setAlphaSliderVisible(true);
 		colorDialog.setTitle("Pick a Color!");
-		
-		colorDialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Toast.makeText(MainActivity.this, "Selected Color: " + colorToHexString(colorDialog.getColor()), Toast.LENGTH_LONG).show();
-							
-				//Save the value in our preferences.
-				color = colorDialog.getColor();
-				v.setBackgroundColor(color);
-				dwEdit.colorChange(color);
-			}
-		});
-		
-		colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				//Nothing to do here.
-			}
-		});
-		
+
+		colorDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+				getString(android.R.string.ok),
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Toast.makeText(
+								MainActivity.this,
+								"Selected Color: "
+										+ colorToHexString(colorDialog
+												.getColor()), Toast.LENGTH_LONG)
+								.show();
+
+						// Save the value in our preferences.
+						color = colorDialog.getColor();
+						v.setBackgroundColor(color);
+						dwEdit.colorChange(color);
+					}
+				});
+
+		colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+				getString(android.R.string.cancel),
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// Nothing to do here.
+					}
+				});
+
 		colorDialog.show();
 	}
-	
+
 	private String colorToHexString(int color) {
 		return String.format("#%06X", 0xFFFFFFFF & color);
 	}
-	
 
-	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == DroidWriterEditText.RESULT_LOAD_IMAGE
+				&& resultCode == RESULT_OK && data != null) {
+			Uri selectedImage = data.getData();
+			String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+			Cursor cursor = getContentResolver().query(selectedImage,
+					filePathColumn, null, null, null);
+			cursor.moveToFirst();
+
+			int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+			String picturePath = cursor.getString(columnIndex);
+			cursor.close();
+
+			// picturePath即为所得
+		}
+	}
+
 }
