@@ -1,5 +1,7 @@
 package com.example.expandableedittext;
 
+import java.net.URI;
+
 import com.example.expandableedittext.R;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
@@ -10,6 +12,11 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.text.Html;
+import android.text.Html.ImageGetter;
+import android.text.Selection;
+import android.text.Spanned;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -42,31 +49,33 @@ public class MainActivity extends Activity {
 		Button clearButton = (Button) findViewById(R.id.ClearButton);
 
 		dwEdit = (DroidWriterEditText) findViewById(R.id.DwEdit);
-		// dwEdit.setImageGetter(new Html.ImageGetter() {
-		// @Override
-		// public Drawable getDrawable(String source) {
-		// Drawable drawable = null;
-		//
-		// try {
-		// if (source.equals("smiley_cool.gif")) {
-		// drawable = getResources().getDrawable(R.drawable.smiley_cool);
-		// } else if (source.equals("smiley_cry.gif")) {
-		// drawable = getResources().getDrawable(R.drawable.smiley_cry);
-		// } else {
-		// drawable = null;
-		// }
-		//
-		// // Important
-		// if (drawable != null) {
-		// drawable.setBounds(0, 0, drawable.getIntrinsicWidth(),
-		// drawable.getIntrinsicHeight());
-		// }
-		// } catch (Exception e) {
-		// Log.e("DroidWriterTestActivity", "Failed to load inline image!");
-		// }
-		// return drawable;
-		// }
-		// });
+//		dwEdit.setImageGetter(new Html.ImageGetter() {
+//			@Override
+//			public Drawable getDrawable(String source) {
+//				Drawable drawable = null;
+//				
+//				Uri dataUri = new Uri
+//				
+//				try {
+//					if (source.equals("smiley_cool.gif")) {
+//						drawable = getResources().getDrawable(R.drawable.smiley_cool);
+//					} else if (source.equals("smiley_cry.gif")) {
+//						drawable = getResources().getDrawable(R.drawable.smiley_cry);
+//					} else {
+//						drawable = null;
+//					}
+//					
+//					// Important
+//					if (drawable != null) {
+//						drawable.setBounds(0, 0, drawable.getIntrinsicWidth(),
+//								drawable.getIntrinsicHeight());
+//					}
+//				} catch (Exception e) {
+//					Log.e("DroidWriterTestActivity", "Failed to load inline image!");
+//				}
+//				return drawable;
+//			}
+//		});
 		dwEdit.setSingleLine(false);
 		dwEdit.setMinLines(10);
 		dwEdit.setBoldToggleButton(boldToggle);
@@ -144,24 +153,28 @@ public class MainActivity extends Activity {
 		return String.format("#%06X", 0xFFFFFFFF & color);
 	}
 
+	private ImageGetter customImageGetter = new Html.ImageGetter() {
+		@Override
+		public Drawable getDrawable(String source) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
+	
+	/**
+	 * int position = Selection
+						.getSelectionStart(DroidWriterEditText.this.getText());
+
+				Spanned e = Html.fromHtml(
+						"<img src=\"" + imageResource + "\">", imageGetter,
+						null);
+
+				DroidWriterEditText.this.getText().insert(position, e);
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == DroidWriterEditText.RESULT_LOAD_IMAGE
-				&& resultCode == RESULT_OK && data != null) {
-			Uri selectedImage = data.getData();
-			String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-			Cursor cursor = getContentResolver().query(selectedImage,
-					filePathColumn, null, null, null);
-			cursor.moveToFirst();
-
-			int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-			String picturePath = cursor.getString(columnIndex);
-			cursor.close();
-
-			// picturePath即为所得
-		}
+		dwEdit.onResultForResolveRichMedia(requestCode, resultCode, data);
 	}
 
 }
