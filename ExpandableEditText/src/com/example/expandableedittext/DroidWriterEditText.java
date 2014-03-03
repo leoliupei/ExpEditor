@@ -1,6 +1,7 @@
 package com.example.expandableedittext;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -23,6 +24,7 @@ import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ToggleButton;
@@ -32,6 +34,8 @@ public class DroidWriterEditText extends EditText {
 	// Log tag
 	public static final String TAG = "DroidWriter";
 	public static final int RESULT_LOAD_IMAGE = 0x01;
+	public static final int RESULT_LOAD_VIDEO = 0x02;
+	public static final int RESULT_LOAD_AUDIO = 0x03;
 
 	// Style constants
 	private static final int STYLE_BOLD = 0;
@@ -69,22 +73,67 @@ public class DroidWriterEditText extends EditText {
 			if(source!=null)
 			{
 				Uri data  = Uri.parse(source);
-				String[] filePathColumn = { MediaStore.Images.Media.DATA };
+				//类型判断
+				ContentResolver cR = mActivity.getContentResolver();
+				String mimeType = cR.getType(data);
+				//image
+				if(mimeType.startsWith("image")){
+					String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
-				Cursor cursor = mActivity.getContentResolver().query(data,
-						filePathColumn, null, null, null);
-				cursor.moveToFirst();
+					Cursor cursor = mActivity.getContentResolver().query(data,
+							filePathColumn, null, null, null);
+					cursor.moveToFirst();
 
-				int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-				String picturePath = cursor.getString(columnIndex);
-				cursor.close();
+					int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+					String picturePath = cursor.getString(columnIndex);
+					cursor.close();
 
-				drawable = new BitmapDrawable(mActivity.getResources(), BitmapFactory.decodeFile(picturePath));
-				
-				if(drawable !=null)
-					drawable.setBounds(0, 0, drawable.getMinimumWidth() /2 , drawable.getMinimumHeight() / 2);
+					drawable = new BitmapDrawable(mActivity.getResources(), SystemUtils.getImageThumbnail(picturePath, 300, 200));
+					
+					if(drawable !=null)
+					{
+						drawable.setBounds(0, 0, drawable.getMinimumWidth() , drawable.getMinimumHeight());
+					}
+				}else if(mimeType.startsWith("video")){
+					//video
+					String[] filePathColumn = { MediaStore.Video.Media.DATA };
+
+					Cursor cursor = mActivity.getContentResolver().query(data,
+							filePathColumn, null, null, null);
+					cursor.moveToFirst();
+
+					int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+					String videoPath = cursor.getString(columnIndex);
+					cursor.close();
+
+					drawable = new BitmapDrawable(mActivity.getResources(), SystemUtils.getVideoThumbnail(videoPath, 300, 200,MediaStore.Images.Thumbnails.MINI_KIND));
+					
+					if(drawable !=null)
+					{
+						drawable.setBounds(0, 0, drawable.getMinimumWidth() , drawable.getMinimumHeight());
+					}
+				}else if(mimeType.startsWith("audio")){
+//					String[] filePathColumn = { MediaStore.Audio.Media.DATA };
+//
+//					Cursor cursor = mActivity.getContentResolver().query(data,
+//							filePathColumn, null, null, null);
+//					cursor.moveToFirst();
+
+//					int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//					String audioPath = cursor.getString(columnIndex);
+//					cursor.close();
+
+//					drawable = new BitmapDrawable(mActivity.getResources(), SystemUtils.getVideoThumbnail(audioPath, 300, 200,MediaStore.Images.Thumbnails.MINI_KIND));
+					
+					//从资源文件加载一张图片
+					drawable = mActivity.getResources().getDrawable(R.drawable.icon);
+					
+					if(drawable !=null)
+					{
+						drawable.setBounds(0, 0, drawable.getMinimumWidth() , drawable.getMinimumHeight());
+					}
+				}
 			}
-
 			return drawable;
 		}
 	};
@@ -354,11 +403,6 @@ public class DroidWriterEditText extends EditText {
 		this.setText(Html.fromHtml(text, imageGetter, null));
 	}
 
-	// Set the default image getter that handles the loading of inline images
-//	public void setImageGetter(Html.ImageGetter imageGetter) {
-//		this.imageGetter = imageGetter;
-//	}
-
 	// Style toggle button setters
 	public void setBoldToggleButton(ToggleButton button) {
 		boldToggle = button;
@@ -442,22 +486,38 @@ public class DroidWriterEditText extends EditText {
 			}
 		});
 	}
-
-//	public void setImageInsertButton(View button, final String imageResource) {
-//		button.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				int position = Selection
-//						.getSelectionStart(DroidWriterEditText.this.getText());
-//
-//				Spanned e = Html.fromHtml(
-//						"<img src=\"" + imageResource + "\">", imageGetter,
-//						null);
-//
-//				DroidWriterEditText.this.getText().insert(position, e);
-//			}
-//		});
-//	}
+	
+	/**
+	 * 插入视频  调起系统控件
+	 * @param button
+	 */
+	public void setVideoInsertButton(View button){
+		button.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(
+						Intent.ACTION_PICK,
+						android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+				mActivity.startActivityForResult(i, RESULT_LOAD_VIDEO);
+			}
+		});
+	}
+	
+	/**
+	 * 插入音频  调起系统控件
+	 * @param button
+	 */
+	public void setAudioInsertButton(View button){
+		button.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(
+						Intent.ACTION_PICK,
+						android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+				mActivity.startActivityForResult(i, RESULT_LOAD_AUDIO);
+			}
+		});
+	}
 
 	public void setClearButton(View button) {
 		button.setOnClickListener(new View.OnClickListener() {
@@ -475,19 +535,15 @@ public class DroidWriterEditText extends EditText {
 	 * @param data
 	 */
 	public void onResultForResolveRichMedia(int requestCode, int resultCode, Intent data){
-		if (requestCode == DroidWriterEditText.RESULT_LOAD_IMAGE
+		if ((requestCode == DroidWriterEditText.RESULT_LOAD_IMAGE || requestCode == DroidWriterEditText.RESULT_LOAD_VIDEO || requestCode == DroidWriterEditText.RESULT_LOAD_AUDIO)
 				&& resultCode == Activity.RESULT_OK && data != null) {
 			Uri richData = data.getData();
 
 			int position = Selection
 					.getSelectionStart(DroidWriterEditText.this.getText());
 			
-			/**
-			 * <img src='"
-			+ R.drawable.tag_small_blue + "'/>
-			 */
 			Spanned e = Html.fromHtml(
-					"<img src=\"" + richData + "\">", imageGetter,
+					"<img src=\"" + richData + "\"/>", imageGetter,
 					null);
 			DroidWriterEditText.this.getText().insert(position, e);
 		}

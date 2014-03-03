@@ -1,22 +1,15 @@
 package com.example.expandableedittext;
 
-import java.net.URI;
-
 import com.example.expandableedittext.R;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Html.ImageGetter;
-import android.text.Selection;
-import android.text.Spanned;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -42,6 +35,8 @@ public class MainActivity extends Activity {
 		ToggleButton centerButton = (ToggleButton) findViewById(R.id.centerButton);
 		final Button colorBtn = (Button) findViewById(R.id.colorBtn);
 		Button imageBtn = (Button) findViewById(R.id.ImageButton);
+		Button videoBtn = (Button) findViewById(R.id.VideoButton);
+		Button audioBtn = (Button) findViewById(R.id.AudioButton);
 
 		// View coolButton = findViewById(R.id.CoolButton);
 		// View cryButton = findViewById(R.id.CryButton);
@@ -85,6 +80,8 @@ public class MainActivity extends Activity {
 		dwEdit.setCenterToggleButton(centerButton);
 		dwEdit.setRightToggleButton(rigButton);
 		dwEdit.setImageInsertButton(imageBtn);
+		dwEdit.setVideoInsertButton(videoBtn);
+		dwEdit.setAudioInsertButton(audioBtn);
 		// dwEdit.setImageInsertButton(coolButton, "smiley_cool.gif");
 		// dwEdit.setImageInsertButton(cryButton, "smiley_cry.gif");
 
@@ -153,14 +150,6 @@ public class MainActivity extends Activity {
 		return String.format("#%06X", 0xFFFFFFFF & color);
 	}
 
-	private ImageGetter customImageGetter = new Html.ImageGetter() {
-		@Override
-		public Drawable getDrawable(String source) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	};
-	
 	/**
 	 * int position = Selection
 						.getSelectionStart(DroidWriterEditText.this.getText());
