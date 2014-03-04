@@ -1,5 +1,10 @@
 package com.example.expandableedittext;
 
+import java.io.File;
+import java.io.IOException;
+
+import com.example.expandableedittext.MediaFile.MediaFileType;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -8,7 +13,9 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Html;
@@ -23,10 +30,12 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class DroidWriterEditText extends EditText {
@@ -62,7 +71,12 @@ public class DroidWriterEditText extends EditText {
 	private ToggleButton alignCenterToggle;// 中对齐
 	private ToggleButton alignRightToggle;// 右对齐
 	
+	//music Path
+	private static final String AUDIO_NAME = "/audio_test.mp4";
+	
 	private static final int imageMaxWidth = 100;
+	
+	private MediaRecorder mediaRecorder;
 
 	// Html image getter that handles the loading of inline images
 	private Html.ImageGetter imageGetter = new Html.ImageGetter() {
@@ -508,13 +522,34 @@ public class DroidWriterEditText extends EditText {
 	 * @param button
 	 */
 	public void setAudioInsertButton(View button){
-		button.setOnClickListener(new View.OnClickListener() {
+		button.setOnTouchListener(new View.OnTouchListener() {
+			
 			@Override
-			public void onClick(View v) {
-				Intent i = new Intent(
-						Intent.ACTION_PICK,
-						android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-				mActivity.startActivityForResult(i, RESULT_LOAD_AUDIO);
+			public boolean onTouch(View v, MotionEvent event) {
+				if((event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) && mediaRecorder == null){
+					//开始录音
+					Toast.makeText(mActivity, "startRecording", Toast.LENGTH_SHORT).show();
+					startRecording();
+					return true;
+				}else if(event.getAction() == MotionEvent.ACTION_UP && mediaRecorder != null){
+					//录音结束
+					Toast.makeText(mActivity, "stopRecording", Toast.LENGTH_SHORT).show();
+					stopRecording();
+					Uri data = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/voice_records"+AUDIO_NAME));
+					System.out.println(data);
+					System.out.println(MediaFile.isAudioFileType(Environment.getExternalStorageDirectory().getAbsolutePath()+"/voice_records"+AUDIO_NAME));
+					return true;
+				}else if(event.getAction() == MotionEvent.ACTION_CANCEL && mediaRecorder != null){
+					//录音结束 并 取消
+					Toast.makeText(mActivity, "cancelRecording", Toast.LENGTH_SHORT).show();
+					stopRecording();
+					File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/voice_records"+AUDIO_NAME);
+					if(f.exists())
+						f.deleteOnExit();
+					return true;
+				}
+				else
+				return false;
 			}
 		});
 	}
@@ -543,10 +578,38 @@ public class DroidWriterEditText extends EditText {
 					.getSelectionStart(DroidWriterEditText.this.getText());
 			
 			Spanned e = Html.fromHtml(
-					"<img src=\"" + richData + "\"/>", imageGetter,
+					" <img src=\"" + richData + "\"/> ", imageGetter,
 					null);
 			DroidWriterEditText.this.getText().insert(position, e);
 		}
+	}
+	
+	private void startRecording(){
+		mediaRecorder = new MediaRecorder();
+		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+		String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/voice_records/";
+		File dir = new File(path);
+		dir.mkdirs();
+		mediaRecorder.setOutputFile(path+AUDIO_NAME);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
+		try {
+			mediaRecorder.prepare();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		mediaRecorder.start();
+	}
+	
+	private void stopRecording(){
+		mediaRecorder.stop();
+		mediaRecorder.reset();
+		mediaRecorder.release();
+		mediaRecorder = null;
 	}
 
 	private class DWTextWatcher implements TextWatcher {
