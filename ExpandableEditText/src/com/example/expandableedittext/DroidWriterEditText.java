@@ -194,6 +194,8 @@ public class DroidWriterEditText extends EditText {
 		// selection
 		// Note: The end can be smaller than the start
 		int selectionEnd = this.getSelectionEnd();
+		
+		System.out.println(selectionStart == selectionEnd);
 
 		// Reverse if the case is what's noted above
 		if (selectionStart > selectionEnd) {
@@ -315,6 +317,7 @@ public class DroidWriterEditText extends EditText {
 
 		// If the user only placed the cursor around
 		if (selStart > 0 && selStart == selEnd) {
+
 			CharacterStyle[] styleSpans = this.getText().getSpans(selStart - 1,
 					selStart, CharacterStyle.class);
 
@@ -322,11 +325,14 @@ public class DroidWriterEditText extends EditText {
 				if (styleSpans[i] instanceof StyleSpan) {
 					if (((StyleSpan) styleSpans[i]).getStyle() == android.graphics.Typeface.BOLD) {
 						boldExists = true;
+						System.out.println("BOLD");
 					} else if (((StyleSpan) styleSpans[i]).getStyle() == android.graphics.Typeface.ITALIC) {
 						italicsExists = true;
+						System.out.println("ITALIC");
 					} else if (((StyleSpan) styleSpans[i]).getStyle() == android.graphics.Typeface.BOLD_ITALIC) {
 						italicsExists = true;
 						boldExists = true;
+						System.out.println("BOLD_ITALIC");
 					}
 				} else if (styleSpans[i] instanceof UnderlineSpan) {
 					underlinedExists = true;
@@ -622,6 +628,7 @@ public class DroidWriterEditText extends EditText {
 			if (position < 0) {
 				position = 0;
 			}
+			System.out.println(position);
 
 			if (position > 0) {
 				CharacterStyle[] appliedStyles = editable.getSpans(
@@ -644,12 +651,16 @@ public class DroidWriterEditText extends EditText {
 						} else if (((StyleSpan) appliedStyles[i]).getStyle() == android.graphics.Typeface.ITALIC) {
 							// Italic style found
 							currentItalicSpan = (StyleSpan) appliedStyles[i];
+						} else if (((StyleSpan) appliedStyles[i]).getStyle() == android.graphics.Typeface.BOLD_ITALIC) {
+							// Italic&Bold style found
+							currentItalicSpan = (StyleSpan) appliedStyles[i];
+							currentBoldSpan = (StyleSpan) appliedStyles[i];
 						}
 					} else if (appliedStyles[i] instanceof UnderlineSpan) {
 						// Underlined style found
 						currentUnderlineSpan = (UnderlineSpan) appliedStyles[i];
-					} else if (appliedStyles[i] instanceof CharacterStyle) {
-//						colorSpan = (ForegroundColorSpan) appliedStyles[i];
+					} else if (appliedStyles[i] instanceof ForegroundColorSpan) {
+						colorSpan = (ForegroundColorSpan) appliedStyles[i];
 					}
 				}
 

@@ -1,15 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@android:color/white" >
+    android:layout_height="fill_parent" >
 
-    <LinearLayout
+    <HorizontalScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:layout_alignParentBottom="true" 
+        >
 
-         <ToggleButton
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ToggleButton
                 android:id="@+id/BoldButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -31,22 +36,12 @@
                 android:layout_height="wrap_content"
                 android:textOff="U"
                 android:textOn="U" />
-            
-            <Button 
+
+            <Button
                 android:id="@+id/colorBtn"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:background="#FF000000"/>
-
-
-        <!-- Styling buttons -->
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
-           
+                android:background="#FF000000" />
 
             <ToggleButton
                 android:id="@+id/leftButton"
@@ -74,36 +69,34 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="clear" />
-        </LinearLayout>
-        
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-             <Button
+
+            <Button
                 android:id="@+id/ImageButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="img" />
-             <Button
+
+            <Button
                 android:id="@+id/VideoButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="v" />
-             <Button
+
+            <Button
                 android:id="@+id/AudioButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="A" />
-            </LinearLayout>
+        </LinearLayout>
+    </HorizontalScrollView>
 
-        <com.example.expandableedittext.DroidWriterEditText
-            android:id="@+id/DwEdit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="top"
-            android:inputType="textCapSentences|textVisiblePassword"
-            android:minLines="10" />
-    </LinearLayout>
+    <com.example.expandableedittext.DroidWriterEditText
+        android:layout_above="@id/scroll_view"
+        android:id="@+id/DwEdit"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="top"
+        android:inputType="textCapSentences|textVisiblePassword"
+        android:minLines="10" />
 
-</ScrollView>
+</RelativeLayout>
