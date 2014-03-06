@@ -1,12 +1,8 @@
 package com.example.expandableedittext;
 
-import android.content.ContentResolver;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
-import android.net.Uri;
-import android.webkit.MimeTypeMap;
 
 public class SystemUtils {
 	
@@ -73,6 +69,13 @@ public class SystemUtils {
 		bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height,
 				ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
 		return bitmap;
+	}
+	
+	/**
+	 * 为视频缩略图加上 播放icon
+	 */
+	public static Bitmap appendPlayIcon(Bitmap b){
+		return null;
 	}
 
 }
