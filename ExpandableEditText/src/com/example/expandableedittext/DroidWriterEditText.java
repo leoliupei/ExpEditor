@@ -57,18 +57,17 @@ public class DroidWriterEditText extends EditText {
 	private ToggleButton alignLeftToggle;// 左对齐
 	private ToggleButton alignCenterToggle;// 中对齐
 	private ToggleButton alignRightToggle;// 右对齐
-	
+
 	private static final int imageMaxWidth = 100;
 
 	// Html image getter that handles the loading of inline images
 	private Html.ImageGetter imageGetter = new Html.ImageGetter() {
-		
+
 		@Override
 		public Drawable getDrawable(String source) {
 			Drawable drawable = null;
-			if(source!=null)
-			{
-				Uri data  = Uri.parse(source);
+			if (source != null) {
+				Uri data = Uri.parse(source);
 				String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
 				Cursor cursor = mActivity.getContentResolver().query(data,
@@ -79,10 +78,13 @@ public class DroidWriterEditText extends EditText {
 				String picturePath = cursor.getString(columnIndex);
 				cursor.close();
 
-				drawable = new BitmapDrawable(mActivity.getResources(), BitmapFactory.decodeFile(picturePath));
-				
-				if(drawable !=null)
-					drawable.setBounds(0, 0, drawable.getMinimumWidth() /2 , drawable.getMinimumHeight() / 2);
+				drawable = new BitmapDrawable(mActivity.getResources(),
+						BitmapFactory.decodeFile(picturePath));
+				System.out.println(picturePath);
+				if (drawable != null){
+					drawable.setBounds(0, 0, 100,
+							100);
+				}
 			}
 
 			return drawable;
@@ -355,9 +357,9 @@ public class DroidWriterEditText extends EditText {
 	}
 
 	// Set the default image getter that handles the loading of inline images
-//	public void setImageGetter(Html.ImageGetter imageGetter) {
-//		this.imageGetter = imageGetter;
-//	}
+	// public void setImageGetter(Html.ImageGetter imageGetter) {
+	// this.imageGetter = imageGetter;
+	// }
 
 	// Style toggle button setters
 	public void setBoldToggleButton(ToggleButton button) {
@@ -427,7 +429,8 @@ public class DroidWriterEditText extends EditText {
 	}
 
 	/**
-	 * 插入图片  调起系统控件
+	 * 插入图片 调起系统控件
+	 * 
 	 * @author liupei
 	 * @param button
 	 */
@@ -443,21 +446,22 @@ public class DroidWriterEditText extends EditText {
 		});
 	}
 
-//	public void setImageInsertButton(View button, final String imageResource) {
-//		button.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				int position = Selection
-//						.getSelectionStart(DroidWriterEditText.this.getText());
-//
-//				Spanned e = Html.fromHtml(
-//						"<img src=\"" + imageResource + "\">", imageGetter,
-//						null);
-//
-//				DroidWriterEditText.this.getText().insert(position, e);
-//			}
-//		});
-//	}
+	// public void setImageInsertButton(View button, final String imageResource)
+	// {
+	// button.setOnClickListener(new View.OnClickListener() {
+	// @Override
+	// public void onClick(View v) {
+	// int position = Selection
+	// .getSelectionStart(DroidWriterEditText.this.getText());
+	//
+	// Spanned e = Html.fromHtml(
+	// "<img src=\"" + imageResource + "\">", imageGetter,
+	// null);
+	//
+	// DroidWriterEditText.this.getText().insert(position, e);
+	// }
+	// });
+	// }
 
 	public void setClearButton(View button) {
 		button.setOnClickListener(new View.OnClickListener() {
@@ -467,28 +471,28 @@ public class DroidWriterEditText extends EditText {
 			}
 		});
 	}
-	
+
 	/**
-	 * activity回调事件   用于富媒体的收集
+	 * activity回调事件 用于富媒体的收集
+	 * 
 	 * @param requestCode
 	 * @param resultCode
 	 * @param data
 	 */
-	public void onResultForResolveRichMedia(int requestCode, int resultCode, Intent data){
+	public void onResultForResolveRichMedia(int requestCode, int resultCode,
+			Intent data) {
 		if (requestCode == DroidWriterEditText.RESULT_LOAD_IMAGE
 				&& resultCode == Activity.RESULT_OK && data != null) {
 			Uri richData = data.getData();
 
-			int position = Selection
-					.getSelectionStart(DroidWriterEditText.this.getText());
-			
+			int position = Selection.getSelectionStart(DroidWriterEditText.this
+					.getText());
+
 			/**
-			 * <img src='"
-			+ R.drawable.tag_small_blue + "'/>
+			 * <img src='" + R.drawable.tag_small_blue + "'/>
 			 */
-			Spanned e = Html.fromHtml(
-					"<img src=\"" + richData + "\">", imageGetter,
-					null);
+			Spanned e = Html.fromHtml("<img src=\"" + richData + "\">",
+					imageGetter, null);
 			DroidWriterEditText.this.getText().insert(position, e);
 		}
 	}
@@ -530,7 +534,7 @@ public class DroidWriterEditText extends EditText {
 						// Underlined style found
 						currentUnderlineSpan = (UnderlineSpan) appliedStyles[i];
 					} else if (appliedStyles[i] instanceof CharacterStyle) {
-//						colorSpan = (ForegroundColorSpan) appliedStyles[i];
+						// colorSpan = (ForegroundColorSpan) appliedStyles[i];
 					}
 				}
 
