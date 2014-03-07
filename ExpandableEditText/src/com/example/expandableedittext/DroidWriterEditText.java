@@ -318,10 +318,20 @@ public class DroidWriterEditText extends EditText {
 					underlinedExists = true;
 				}
 			}
+		}else if(selStart == 0 && selEnd == 0){//当游标直接指到0处,去除所有style，但是需要为后面的style再设置一个
+			CharacterStyle[] styleSpans = this.getText().getSpans(0,
+					0, CharacterStyle.class);
+			for (int i = 0; i < styleSpans.length; i++) {
+				int start = getText().getSpanStart(styleSpans[i]);
+				int end = getText().getSpanEnd(styleSpans[i]);
+				getText().removeSpan(styleSpans[i]);
+				getText().setSpan(styleSpans[i], 0, end, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+			}
 		}
 
 		// Else if the user selected multiple characters
 		else {
+			android.util.Log.e("text", this.getText().toString());
 			CharacterStyle[] styleSpans = this.getText().getSpans(selStart,
 					selEnd, CharacterStyle.class);
 
@@ -352,7 +362,7 @@ public class DroidWriterEditText extends EditText {
 				}
 			}
 		}
-
+		
 		// Display the format settings
 		if (boldToggle != null) {
 			if (boldExists)
@@ -554,46 +564,48 @@ public class DroidWriterEditText extends EditText {
 		public void afterTextChanged(Editable editable) {
 
 			// Add style as the user types if a toggle button is enabled
+			StyleSpan currentBoldSpan = null;
+			StyleSpan currentItalicSpan = null;
+			UnderlineSpan currentUnderlineSpan = null;
+			ForegroundColorSpan colorSpan = null;
+			AlignmentSpan.Standard alignSpan = null;
+			
 			int position = Selection.getSelectionStart(DroidWriterEditText.this
 					.getText());
 			if (position < 0) {
 				position = 0;
 			}
+			
+			CharacterStyle[] appliedStyles = editable.getSpans(
+					position - 1, position, CharacterStyle.class);// 样式
+			
+			// Look for possible styles already applied to the entered text
+			for (int i = 0; i < appliedStyles.length; i++) {
+				if (appliedStyles[i] instanceof StyleSpan) {
+					if (((StyleSpan) appliedStyles[i]).getStyle() == android.graphics.Typeface.BOLD) {
+						// Bold style found
+						currentBoldSpan = (StyleSpan) appliedStyles[i];
+					} else if (((StyleSpan) appliedStyles[i]).getStyle() == android.graphics.Typeface.ITALIC) {
+						// Italic style found
+						currentItalicSpan = (StyleSpan) appliedStyles[i];
+					}
+				} else if (appliedStyles[i] instanceof UnderlineSpan) {
+					// Underlined style found
+					currentUnderlineSpan = (UnderlineSpan) appliedStyles[i];
+					android.util.Log.e("under start", ""+DroidWriterEditText.this.getText().getSpanStart(appliedStyles[i]));
+					android.util.Log.e("under end", ""+DroidWriterEditText.this.getText().getSpanEnd(appliedStyles[i]));
+				} else if (appliedStyles[i] instanceof CharacterStyle) {
+					colorSpan = (ForegroundColorSpan) appliedStyles[i];
+				}
+			}
 
 			if (position > 0) {
-				CharacterStyle[] appliedStyles = editable.getSpans(
-						position - 1, position, CharacterStyle.class);// 样式
 				AlignmentSpan.Standard[] alignstyles = editable.getSpans(
 						position - 2, position, AlignmentSpan.Standard.class);// 布局
-
-				StyleSpan currentBoldSpan = null;
-				StyleSpan currentItalicSpan = null;
-				UnderlineSpan currentUnderlineSpan = null;
-				ForegroundColorSpan colorSpan = null;
-				AlignmentSpan.Standard alignSpan = null;
-
-				// Look for possible styles already applied to the entered text
-				for (int i = 0; i < appliedStyles.length; i++) {
-					if (appliedStyles[i] instanceof StyleSpan) {
-						if (((StyleSpan) appliedStyles[i]).getStyle() == android.graphics.Typeface.BOLD) {
-							// Bold style found
-							currentBoldSpan = (StyleSpan) appliedStyles[i];
-						} else if (((StyleSpan) appliedStyles[i]).getStyle() == android.graphics.Typeface.ITALIC) {
-							// Italic style found
-							currentItalicSpan = (StyleSpan) appliedStyles[i];
-						}
-					} else if (appliedStyles[i] instanceof UnderlineSpan) {
-						// Underlined style found
-						currentUnderlineSpan = (UnderlineSpan) appliedStyles[i];
-					} else if (appliedStyles[i] instanceof CharacterStyle) {
-//						colorSpan = (ForegroundColorSpan) appliedStyles[i];
-					}
-				}
-
-				if (alignstyles.length > 0) {
-					alignSpan = alignstyles[0];
-				}
-
+//				if (alignstyles.length > 0) {
+//					alignSpan = alignstyles[0];
+//				}
+//
 				// 颜色变化
 				if (isColorChange) {
 					isColorChange = false;
@@ -621,80 +633,17 @@ public class DroidWriterEditText extends EditText {
 								position - 1, position,
 								Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
 					}
-				}
-
-				if (alignCenterToggle != null) {
-					if (alignCenterToggle.isChecked() && alignSpan == null) {
-						editable.setSpan(new AlignmentSpan.Standard(
-								Layout.Alignment.ALIGN_CENTER), position - 1,
-								position, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					} else if (!alignCenterToggle.isChecked()
-							&& alignSpan != null
-							&& alignSpan.getAlignment().compareTo(
-									Layout.Alignment.ALIGN_CENTER) == 0) {
-						int alignStart = editable.getSpanStart(alignSpan);
-						int alignEnd = editable.getSpanEnd(alignSpan);
-
-						editable.removeSpan(alignSpan);
-						if (alignStart <= (position - 1)) {
-							editable.setSpan(new AlignmentSpan.Standard(
-									Layout.Alignment.ALIGN_CENTER), alignStart,
-									position - 1,
-									Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-						}
-
-						// The old bold style span end after the current cursor
-						// position, so we need to define a
-						// second newly created style span too, which begins
-						// after the newly entered character and
-						// ends at the old span's ending position. So we split
-						// the span.
-						if (alignEnd > position) {
-							editable.setSpan(new AlignmentSpan.Standard(
-									Layout.Alignment.ALIGN_CENTER), position,
-									alignEnd,
-									Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-						}
-					}
-				}
-
-				if (alignRightToggle != null) {
-					if (alignRightToggle.isChecked() && alignSpan == null) {
-						editable.setSpan(new AlignmentSpan.Standard(
-								Layout.Alignment.ALIGN_OPPOSITE), position - 1,
-								position, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					} else if (!alignRightToggle.isChecked()
-							&& alignSpan != null
-							&& alignSpan.getAlignment().compareTo(
-									Layout.Alignment.ALIGN_OPPOSITE) == 0) {
-						int alignStart = editable.getSpanStart(alignSpan);
-						int alignEnd = editable.getSpanEnd(alignSpan);
-
-						editable.removeSpan(alignSpan);
-						if (alignStart <= (position - 1)) {
-							editable.setSpan(new AlignmentSpan.Standard(
-									Layout.Alignment.ALIGN_OPPOSITE),
-									alignStart, position - 1,
-									Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-						}
-
-						// The old bold style span end after the current cursor
-						// position, so we need to define a
-						// second newly created style span too, which begins
-						// after the newly entered character and
-						// ends at the old span's ending position. So we split
-						// the span.
-						if (alignEnd > position) {
-							editable.setSpan(new AlignmentSpan.Standard(
-									Layout.Alignment.ALIGN_OPPOSITE), position,
-									alignEnd,
-									Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+				}else{
+					if(colorSpan != null){//按回退按钮的情况
+						if(DroidWriterEditText.this.getText().getSpanStart(colorSpan) == DroidWriterEditText.this.getText().getSpanEnd(colorSpan)){//考虑delete的情况
+							editable.removeSpan(colorSpan);
 						}
 					}
 				}
 
 				// Handle the bold style toggle button if it's present
 				if (boldToggle != null) {
+					android.util.Log.e("test","情况1");
 					if (boldToggle.isChecked() && currentBoldSpan == null) {
 						// The user switched the bold style button on and the
 						// character doesn't have any bold
@@ -705,7 +654,8 @@ public class DroidWriterEditText extends EditText {
 						editable.setSpan(new StyleSpan(
 								android.graphics.Typeface.BOLD), position - 1,
 								position, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-					} else if (!boldToggle.isChecked()
+						android.util.Log.e("test","情况2");
+					}else if (!boldToggle.isChecked()
 							&& currentBoldSpan != null) {
 						// The user switched the bold style button off and the
 						// character has bold style applied.
@@ -713,7 +663,8 @@ public class DroidWriterEditText extends EditText {
 						// a new one that end 1 position right
 						// before the newly entered character.
 						int boldStart = editable.getSpanStart(currentBoldSpan);
-						int boldEnd = editable.getSpanEnd(currentBoldSpan);
+						int boldEnd = editable.getSpanEnd(currentBoldSpan);android.util.Log.e("test","情况3");
+						
 
 						editable.removeSpan(currentBoldSpan);
 						if (boldStart <= (position - 1)) {
@@ -721,6 +672,7 @@ public class DroidWriterEditText extends EditText {
 									android.graphics.Typeface.BOLD), boldStart,
 									position - 1,
 									Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+							android.util.Log.e("test","情况4");
 						}
 
 						// The old bold style span end after the current cursor
@@ -733,7 +685,12 @@ public class DroidWriterEditText extends EditText {
 							editable.setSpan(new StyleSpan(
 									android.graphics.Typeface.BOLD), position,
 									boldEnd, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+							android.util.Log.e("test","情况5");
 						}
+					}
+				}else if(boldToggle != null && boldToggle.isChecked() && currentBoldSpan != null){//第三种情况
+					if(DroidWriterEditText.this.getText().getSpanStart(currentBoldSpan) == DroidWriterEditText.this.getText().getSpanEnd(currentBoldSpan)){//考虑delete的情况
+						editable.removeSpan(currentBoldSpan);
 					}
 				}
 
@@ -765,6 +722,10 @@ public class DroidWriterEditText extends EditText {
 								android.graphics.Typeface.ITALIC), position,
 								italicEnd, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
 					}
+				}else if(italicsToggle != null && italicsToggle.isChecked() && currentItalicSpan != null){//第三种情况
+					if(DroidWriterEditText.this.getText().getSpanStart(currentItalicSpan) == DroidWriterEditText.this.getText().getSpanEnd(currentItalicSpan)){//考虑delete的情况
+						editable.removeSpan(currentItalicSpan);
+					}
 				}
 
 				// Handle the underlined style toggle button if it's present
@@ -792,6 +753,10 @@ public class DroidWriterEditText extends EditText {
 						editable.setSpan(new UnderlineSpan(), position,
 								underLineEnd,
 								Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+					}
+				}else if(underlineToggle != null && underlineToggle.isChecked() && currentUnderlineSpan != null){//第三种情况，考虑delete的情况
+					if(DroidWriterEditText.this.getText().getSpanStart(currentUnderlineSpan) == DroidWriterEditText.this.getText().getSpanEnd(currentUnderlineSpan)){
+						editable.removeSpan(currentUnderlineSpan);
 					}
 				}
 			}
